@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic
+
+supabase
+asyncpg
+
+langchain
+langgraph
+langchain-anthropic
+
+openai
+anthropic
+
+python-dotenv
+httpx
+
