@@ -34,7 +34,7 @@ class Config(BaseSettings):
 
     # Logging configuration
     log_level: str = Field(
-        default="info", description="The level of logging to run the application on"
+        default="INFO", description="The level of logging to run the application on"
     )
 
     # Database configuration
