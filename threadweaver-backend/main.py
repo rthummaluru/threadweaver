@@ -1,8 +1,11 @@
 from typing import Union
 from fastapi import FastAPI
 import logging
+import uvicorn
 from config import config
 from fastapi.middleware.cors import CORSMiddleware
+from app.db.supabase_client import get_supabase_connection, supabase_client
+import supabase
 
 # Create the FastAPI app
 app = FastAPI(
@@ -40,6 +43,22 @@ async def health_check():
         "app_name": config.app_name,
         "app_version": config.app_version,
     }
+
+@app.on_event("startup")
+async def startup_event():
+    """ Startup event """
+    logger.info("Starting up...")
+    try:
+        # Initialize the Supabase client connection
+        supabase_client.connect_to_supabase()
+        
+        # Test the connection
+        if not supabase_client.test_connection():
+            raise Exception("Failed to connect to Supabase")
+        logger.info("Supabase connected successfully")
+    except Exception as e:
+        logger.error(f"Error starting up: {e}")
+        raise e
 
 if __name__ == "__main__":
     uvicorn.run(app, host=config.host, port=config.port)
