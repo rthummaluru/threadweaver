@@ -41,6 +41,9 @@ class Config(BaseSettings):
     supabase_url: Optional[str] = Field(
         default=None, description="The URL of the Supabase database", repr=False
     )
+    supabase_key: Optional[str] = Field(
+        default=None, description="The API key for the Supabase database", repr=False
+    )
 
     # AI configuration
     openai_api_key: Optional[str] = Field(
@@ -57,6 +60,13 @@ class Config(BaseSettings):
     cors_origins: list[str] = Field(
         default=["http://localhost:3000"], description="Allowed CORS origins"
     )
+
+    def get_embedding_model(self, embedding_model: Optional[str] = None, **kwargs) -> any:
+        """ Get the embedding model """
+        from langchain_openai import OpenAIEmbeddings
+
+        model = embedding_model or "text-embedding-3-small"
+        return OpenAIEmbeddings(model=model, **kwargs)
 
 
 
