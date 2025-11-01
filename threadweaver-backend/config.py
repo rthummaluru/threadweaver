@@ -68,7 +68,9 @@ class Config(BaseSettings):
         model = embedding_model or "text-embedding-3-small"
         return OpenAIEmbeddings(model=model, **kwargs)
 
-
+    notion_token: Optional[str] = Field(
+        default=None, description="The API key for the Notion API", repr=False
+    )
 
 config = Config()
 

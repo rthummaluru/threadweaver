@@ -16,3 +16,5 @@ python-dotenv
 httpx
 
 pydantic-settings
+
+"mcp[cli]"
