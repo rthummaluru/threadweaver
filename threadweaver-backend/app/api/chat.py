@@ -17,7 +17,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
     llm_chat_service = LLMChatService()
    
     try:
-        response = llm_chat_service.chat(request)
+        response = await llm_chat_service.chat(request)
         logger.info(f"Chat response: {response}")
         return response
     except Exception as e:

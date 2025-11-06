@@ -1,5 +1,7 @@
 import asyncio
 import os
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from pydantic import AnyUrl
 
@@ -16,21 +18,34 @@ server_params = StdioServerParameters(
     env={"NOTION_TOKEN": config.notion_token},
 )
 
-async def main(): 
-    #Connect with the Notion MCP Server via stdio
+@asynccontextmanager
+async def connect_to_notion_mcp_server() -> AsyncIterator[ClientSession]:
+    """
+    Context manager for connecting to Notion MCP server.
+    Usage:
+        async with connect_to_notion_mcp_server() as session:
+            # Use session here
+            tools = await session.list_tools()
+            ...
+    """
+    # Connect with the Notion MCP Server via stdio
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
-            
-            #Initiate the MCP client session
+            # Initiate the MCP client session
             await session.initialize()
+            yield session
 
-            # List available tools from the MCP server
-            tools = await session.list_tools()
-            tool_names = [tool.name for tool in tools.tools] if hasattr(tools, 'tools') else []
-            print(f"Available tools: {tool_names}")
 
-            result = await session.call_tool("API-post-search", {"query": "Hello, world!"})
-            print(f"Result: {result}")
+async def main():
+    """Example usage of the Notion MCP client"""
+    async with connect_to_notion_mcp_server() as session:
+        # List available tools from the MCP server
+        tools = await session.list_tools()
+        tool_names = [tool.name for tool in tools.tools] if hasattr(tools, 'tools') else []
+        print(f"Available tools: {tool_names}")
+
+        result = await session.call_tool("API-post-search", {"query": "when was the page created?"})
+        print(f"Result: {result}")
 
 if __name__ == "__main__":
     asyncio.run(main())
