@@ -1,4 +1,5 @@
 import logging
+import time as t
 from config import config
 import anthropic
 from app.schemas.requests import ChatRequest, ChatResponse, ChatMessage, MessageType
@@ -31,9 +32,7 @@ class LLMChatService:
         # Use context manager to ensure connection is properly closed
         async with connect_to_notion_mcp_server() as session:
             # Request list of available tools from MCP server
-            tools = await session.list_tools()
-            # Debug: Print tools to see what we're getting
-            print(f"Test Tools: {[tool for tool in tools.tools] if hasattr(tools, 'tools') else []}")
+            tools = await session.list_tools()   
             # Extract the tools list from the response (MCP returns a list in .tools attribute)
             return tools.tools if hasattr(tools, 'tools') else []
 
@@ -54,7 +53,9 @@ class LLMChatService:
         # Create a new MCP connection for this tool call
         async with connect_to_notion_mcp_server() as session:
             # Execute the tool on the MCP server
+            logger.info(f"=============== Calling tool: {tool_name} ===============")
             result = await session.call_tool(tool_name, arguments)
+            logger.info(f"=============== Tool result: {result} ===============")
             return result
     
     async def _convert_notion_tools_to_anthropic(self, tools: list):
@@ -111,6 +112,8 @@ class LLMChatService:
         Returns:
             ChatResponse with Claude's response
         """
+        
+        logger.info("=============== Begin LLM workflow ===============")
         # Convert request messages to Anthropic format
         messages = [{"role": message.type.value, "content": message.content} for message in request.messages]
         
@@ -119,6 +122,8 @@ class LLMChatService:
         
         # Step 2: Convert MCP tools to Anthropic format
         anthropic_tools = await self._get_anthropic_tools(tools)
+        
+        #logger.info(f"=== LLMChatService.chat: Tools converted to Anthropic format: {anthropic_tools} ===")
         
         try:
             # Step 3: First call to Claude with tools
@@ -129,18 +134,18 @@ class LLMChatService:
                 tools=anthropic_tools,  # Pass tools to Claude
             )
             
-            # Debug: Check what Claude wants to do
-            print(f"Response stop reason: {response.stop_reason}")
-            print(f"Response content: {response.content}")
+           # logger.info(f"=== LLMChatService.chat: Response stop reason: {response.stop_reason} ===")
+           # logger.info(f"=== LLMChatService.chat: Response content: {response.content} ===")
 
             # Step 4: Handle tool use loop
             current_messages = messages  # Track conversation history
+            logger.info(f"=============== Current messages: {current_messages} ===============")
             
             # Keep looping as long as Claude wants to use tools
+            start_time = t.time()
             while response.stop_reason == "tool_use":
                 # Find the tool_use block in Claude's response
                 tool_blocks = [block for block in response.content if block.type == "tool_use"]
-                
                 tool_results = []
                 if tool_blocks:
                     for tool_block in tool_blocks:
@@ -169,6 +174,11 @@ class LLMChatService:
                     messages=current_messages,  # Include conversation + tool result
                     tools=anthropic_tools,
                 )
+
+                end_time = t.time()
+                logger.info(f"=============== Time taken to process tool use: {end_time - start_time} seconds ===============")
+
+                start_time = end_time
 
             # Step 8: Return final response (when Claude is done using tools)
             return ChatResponse(

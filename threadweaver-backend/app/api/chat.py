@@ -18,7 +18,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
    
     try:
         response = await llm_chat_service.chat(request)
-        logger.info(f"Chat response: {response}")
         return response
     except Exception as e:
         logger.error(f"Error chatting with the model: {e}")
