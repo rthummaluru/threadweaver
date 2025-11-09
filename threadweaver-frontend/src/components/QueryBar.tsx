@@ -4,7 +4,7 @@ interface Props {
     children: ReactNode;
 }
 
-const SearchBar = ({ children }: Props) => {
+const QueryBar = ({ children }: Props) => {
     return (
         <div className="search-bar">
             {children}
@@ -12,4 +12,4 @@ const SearchBar = ({ children }: Props) => {
     )
 }
 
-export default SearchBar;
+export default QueryBar;
