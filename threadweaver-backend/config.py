@@ -58,7 +58,7 @@ class Config(BaseSettings):
 
     # CORS configuration
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000"], description="Allowed CORS origins"
+        default=["http://localhost:5173"], description="Allowed CORS origins"
     )
 
     def get_embedding_model(self, embedding_model: Optional[str] = None, **kwargs) -> any:

@@ -1,0 +1,12 @@
+axios
+react
+react-dom
+vite
+tailwindcss
+postcss
+autoprefixer
+eslint
+eslint-plugin-react-hooks
+eslint-plugin-react-refresh
+prettier
+@tailwindcss/typography
