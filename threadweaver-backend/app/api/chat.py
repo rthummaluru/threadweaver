@@ -14,6 +14,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
     """
     Chat with the model
     """
+    logger.info(f"Received request: {request}")
     llm_chat_service = LLMChatService()
    
     try:
@@ -21,4 +22,4 @@ async def chat(request: ChatRequest) -> ChatResponse:
         return response
     except Exception as e:
         logger.error(f"Error chatting with the model: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) 

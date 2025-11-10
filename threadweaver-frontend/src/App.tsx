@@ -5,6 +5,7 @@ import QueryBar from './components/QueryBar';
 import Chat from './components/Chat';
 import Button from './components/Button';
 import { useState } from 'react';
+import axios from 'axios';
 
 const App = () => {
 
@@ -12,16 +13,22 @@ const App = () => {
   const [inputValue, setInputValue] = useState('');
 
   // State to manage full list of messages
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<{type: string, content: string}[]>([]);
 
   // Updates the current list of messages after user clicks button
-  const handleSend = () => {
+  const handleSend = async () => {
     if (inputValue.trim() === '') return;
-
     // Update Current list of messages
-    setChatMessages([...chatMessages, inputValue]);
+    setChatMessages([...chatMessages, {type: 'user', content: inputValue}]);
     // Clear current input state
     setInputValue('');
+
+    // Send the message to the backend
+    const response = await axios.post('http://127.0.0.1:8000/api/v1/chat', {
+      messages: [...chatMessages, {type: 'user', content: inputValue}],
+    });
+    console.log(response.data);
+    setChatMessages(prev => [...prev, {type: 'assistant', content: response.data.response_message.content}]);
   }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -47,7 +54,7 @@ const App = () => {
             {/* Display the list of messages */}
             {chatMessages.map((message, index) => (
               <div className="chat-message" key={index}>
-                {message}
+                {message.type === 'user' ? <div className="user-message">{message.content}</div> : <div className="assistant-message">{message.content}</div>}
               </div>
             ))}
           </div>
