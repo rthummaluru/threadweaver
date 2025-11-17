@@ -7,7 +7,7 @@ interface Props {
 
 const AppName = ({ children }: Props) => {
   return (
-    <div className="app-name">
+    <div className="app-name flex justify-center items-center text-center">
         {children}
     </div>
   )

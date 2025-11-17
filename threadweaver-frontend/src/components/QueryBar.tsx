@@ -6,7 +6,7 @@ interface Props {
 
 const QueryBar = ({ children }: Props) => {
     return (
-        <div className="search-bar">
+        <div className="search-bar flex items-end gap-2">
             {children}
         </div>
     )

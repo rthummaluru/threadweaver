@@ -6,7 +6,7 @@ interface Props {
 
 const Headings = ({ children }: Props) => {
     return (
-        <div className="headings">
+        <div className="headings text-center">
             {children}
         </div>
     )

@@ -55,39 +55,35 @@ const App = () => {
 
   return (
     <>
-      <div className="app-container flex justify-center items-center bg-red-200 text-center">
+      <div className="app-container bg-red-200">
         <AppName>
           <h1>ThreadWeaver</h1>
         </AppName>
       </div>
       
-      <div className="headings-container text-center">
-        <Headings>
-          <p>ThreadWeaver is a tool that helps you work seamlessly across Slack, Notion, and WhatsApp Business.</p>
-        </Headings>
-      </div>
+      <Headings>
+        <p>ThreadWeaver is a tool that helps you work seamlessly across Slack, Notion, and WhatsApp Business.</p>
+      </Headings>
 
-      <div className="chat-container flex justify-center items-center bg-green-200 max-w-lg mx-auto p-4 m-4">
+      <div className="chat-container bg-green-200">
         <Chat>
-          <div className="w-full max-w-3xl flex flex-col gap-4">
-            {/* Display the list of messages */}
-            {chatMessages.map((message, index) => (
-              <div className="chat-message flex" key={index}>
-                {message.type === 'user' ? 
-                  <div className="user-message bg-blue-500 text-white p-3 rounded-lg ml-auto max-w-md">{message.content}</div> : 
-                  <div className="assistant-message bg-gray-200 text-black p-3 rounded-lg mr-auto max-w-md">{message.content}</div>}
-              </div>
-            ))}
+          {/* Display the list of messages */}
+          {chatMessages.map((message, index) => (
+            <div className="chat-message flex" key={index}>
+              {message.type === 'user' ? 
+                <div className="user-message bg-blue-500 text-white p-3 rounded-lg ml-auto max-w-md">{message.content}</div> : 
+                <div className="assistant-message bg-gray-200 text-black p-3 rounded-lg mr-auto max-w-md">{message.content}</div>}
+            </div>
+          ))}
 
-            {isLoading && <div className="loading-message bg-black-500 text-white p-3 rounded-lg mr-auto max-w-md">Loading...</div>}
-            {!isLoading && chatMessages.length === 0 && <div className="initial-message"> Start a conversation!</div>}
-          </div>
+          {isLoading && <div className="loading-message bg-black-500 text-white p-3 rounded-lg mr-auto max-w-md">Loading...</div>}
+          {!isLoading && chatMessages.length === 0 && <div className="initial-message"> Start a conversation!</div>}
         </Chat>
       </div>
 
-      <div className="search-bar-container text-center">
+      <div className="search-bar-container flex justify-center">
         <QueryBar>
-          <textarea className="query-input" placeholder="Enter your query" value={inputValue} onChange={handleInputChange} />
+          <textarea className="query-input" placeholder="Enter your query" value={inputValue} onChange={handleInputChange} />       
           <Button textContent='Send' handleClick={handleSend} disabled={isDisabled} />
         </QueryBar>
       </div>
