@@ -4,6 +4,7 @@ from config import config
 import anthropic
 from app.schemas.requests import ChatRequest, ChatResponse, ChatMessage, MessageType
 from app.integrations.NotionMCPClient import connect_to_notion_mcp_server
+from app.prompts.chat_system_prompt import system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +131,7 @@ class LLMChatService:
             response = self.client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=1024,
+                system=system_prompt,
                 messages=messages,
                 tools=anthropic_tools,  # Pass tools to Claude
             )
@@ -171,6 +173,7 @@ class LLMChatService:
                 response = self.client.messages.create(
                     model="claude-sonnet-4-20250514",
                     max_tokens=1024,
+                    system=system_prompt,
                     messages=current_messages,  # Include conversation + tool result
                     tools=anthropic_tools,
                 )
