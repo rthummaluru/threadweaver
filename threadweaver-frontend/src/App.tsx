@@ -18,22 +18,34 @@ const App = () => {
   // State to manage loading state
   const [isLoading, setIsLoading] = useState(false);
 
+  // State to manage disabled state of the button
+  const [isDisabled, setIsDisabled] = useState(false);
+
   // Updates the current list of messages after user clicks button
   const handleSend = async () => {
     if (inputValue.trim() === '') return;
     setIsLoading(true);
+    setIsDisabled(true);
     // Update Current list of messages
     setChatMessages([...chatMessages, {type: 'user', content: inputValue}]);
     // Clear current input state
     setInputValue('');
 
-    // Send the message to the backend
-    const response = await axios.post('http://127.0.0.1:8000/api/v1/chat', {
-      messages: [...chatMessages, {type: 'user', content: inputValue}],
-    });
-    console.log(response.data);
-    setChatMessages(prev => [...prev, {type: 'assistant', content: response.data.response_message.content}]);
-    setIsLoading(false);
+    try {
+      // Send the message to the backend
+      const response = await axios.post('http://127.0.0.1:8000/api/v1/chat', {
+        messages: [...chatMessages, {type: 'user', content: inputValue}],
+      });
+        console.log(response.data);
+        setChatMessages(prev => [...prev, {type: 'assistant', content: response.data.response_message.content}]);
+        setIsLoading(false);
+        setIsDisabled(false);
+    } catch (error) {
+      console.error('Error sending message to backend:', error);
+
+      setIsLoading(false);
+      setIsDisabled(false);
+    }
   }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -76,7 +88,7 @@ const App = () => {
       <div className="search-bar-container text-center">
         <QueryBar>
           <textarea className="query-input" placeholder="Enter your query" value={inputValue} onChange={handleInputChange} />
-          <Button textContent='Send' handleClick={handleSend} />
+          <Button textContent='Send' handleClick={handleSend} disabled={isDisabled} />
         </QueryBar>
       </div>
     </>
