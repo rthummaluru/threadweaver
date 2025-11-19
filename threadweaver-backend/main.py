@@ -6,6 +6,7 @@ from config import config
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.supabase_client import get_supabase_connection, supabase_client
 from app.api.chat import router as chat_router
+from app.api.users import router as users_router
 import supabase
 
 # Create the FastAPI app
@@ -62,6 +63,7 @@ async def startup_event():
         raise e
 
 app.include_router(chat_router)
+app.include_router(users_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host=config.host, port=config.port)

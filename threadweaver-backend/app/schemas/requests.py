@@ -20,6 +20,7 @@ class ChatMessage(BaseModel):
     """
     type: MessageType = Field(..., description="The type of the message")
     content: str = Field(..., description="The content of the message")
+    created_at: datetime = Field(default=datetime.now(), description="The date and time the message was created")
 
 class ChatRequest(BaseModel):
     """
@@ -27,7 +28,7 @@ class ChatRequest(BaseModel):
     """
     # TO BE IMPLEMENTED: session_id: str = Field(..., description="The session id")
     messages: List[ChatMessage] = Field(..., description="The messages to chat")
-
+    
 class ChatResponse(BaseModel):
     """
     Chat response schema
@@ -39,7 +40,7 @@ class SessionCreateRequest(BaseModel):
     """
     Session create request schema
     """
-    title: Optional[str] = Field(..., description="Optional title of the session")
+    title: Optional[str] = Field(default='New Session', description="Optional title of the session")
 
 class SessionCreateResponse(BaseModel):
     """
@@ -49,3 +50,9 @@ class SessionCreateResponse(BaseModel):
     title: Optional[str] = Field(..., description="Optional title of the session")
     created_at: datetime = Field(..., description="The date and time the session was created")
     updated_at: datetime = Field(..., description="The date and time the session was updated")
+
+class MessageListResponse(BaseModel):
+    """
+    Message list response schema
+    """
+    messages: List[ChatMessage] = Field(..., description="The messages in the session")
