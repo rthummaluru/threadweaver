@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Any, Dict, List
 from enum import Enum
+import uuid 
+from datetime import datetime
+
 
 class MessageType(str, Enum):
     """
@@ -32,5 +35,17 @@ class ChatResponse(BaseModel):
     response_message: ChatMessage = Field(..., description="The message to chat")
     query_used: str = Field(..., description="The query used to generate the response")
 
+class SessionCreateRequest(BaseModel):
+    """
+    Session create request schema
+    """
+    title: Optional[str] = Field(..., description="Optional title of the session")
 
-
+class SessionCreateResponse(BaseModel):
+    """
+    Session create response schema
+    """
+    session_id: uuid.UUID = Field(..., description="The id of the session")
+    title: Optional[str] = Field(..., description="Optional title of the session")
+    created_at: datetime = Field(..., description="The date and time the session was created")
+    updated_at: datetime = Field(..., description="The date and time the session was updated")
