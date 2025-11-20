@@ -4,7 +4,7 @@ import Headings from './components/Headers';
 import QueryBar from './components/QueryBar';
 import Chat from './components/Chat';
 import Button from './components/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const App = () => {
@@ -21,6 +21,44 @@ const App = () => {
   // State to manage disabled state of the button
   const [isDisabled, setIsDisabled] = useState(false);
 
+  // State to manage session id
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+
+  // Get the session id from the backend
+  const getSessionId = async () => {
+    try {
+      // Gets the session id from the backend
+      console.log('Getting session id...'); 
+      const response = await axios.get('http://127.0.0.1:8000/api/v1/users/7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8/sessions/current');
+      setSessionId(response.data.session_id);
+    } catch (error) {
+      console.error('Error getting session id:', error);
+    }
+  }
+
+  // Get the messages from the backend
+  const getMessages = async () => {
+    try {
+      // Gets the messages from the backend
+      console.log('Getting initial messages...');
+      const response = await axios.get(`http://127.0.0.1:8000/api/v1/sessions/${sessionId}/messages`);
+      setChatMessages(response.data.messages);
+    } catch (error) {
+      console.error('Error getting messages:', error);
+    }
+  }
+
+  useEffect(() => {
+    getSessionId();
+  }, []);
+
+  useEffect(() => {
+    if (sessionId) {
+      getMessages();
+    }
+  }, [sessionId]);
+
   // Updates the current list of messages after user clicks button
   const handleSend = async () => {
     if (inputValue.trim() === '') return;
@@ -34,6 +72,7 @@ const App = () => {
     try {
       // Send the message to the backend
       const response = await axios.post('http://127.0.0.1:8000/api/v1/chat', {
+        session_id: sessionId,
         messages: [...chatMessages, {type: 'user', content: inputValue}],
       });
         console.log(response.data);
@@ -68,6 +107,7 @@ const App = () => {
       <div className="chat-container bg-green-200">
         <Chat>
           {/* Display the list of messages */}
+
           {chatMessages.map((message, index) => (
             <div className="chat-message flex" key={index}>
               {message.type === 'user' ? 

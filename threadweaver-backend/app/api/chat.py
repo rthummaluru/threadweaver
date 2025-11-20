@@ -46,7 +46,7 @@ def insert_user_message(supabase_client: Client, request: ChatRequest):
         supabase_client.table("messages").insert({
             "session_id": request.session_id,
             "role": MessageType.USER,
-            "content": request.messages[0].content,
+            "content": request.messages[-1].content,
         }).execute()
     except Exception as e:
         logger.error(f"Error inserting user message into the messages table: {e}")

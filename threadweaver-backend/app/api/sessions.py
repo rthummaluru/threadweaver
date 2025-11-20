@@ -18,7 +18,7 @@ async def get_session_messages(session_id: str) -> MessageListResponse:
         logger.info(f"Getting messages for session: {session_id}")
         supabase_client = get_supabase_connection()
 
-        response = supabase_client.table("messages").select("*").eq("session_id", session_id).order("created_at", asc=True).execute()
+        response = supabase_client.table("messages").select("*").eq("session_id", session_id).order("created_at", desc=False).execute()
         logger.info(f" Messages Database Response: {response}")
 
         messages = []
