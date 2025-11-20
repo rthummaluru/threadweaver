@@ -20,19 +20,19 @@ class ChatMessage(BaseModel):
     """
     type: MessageType = Field(..., description="The type of the message")
     content: str = Field(..., description="The content of the message")
-    created_at: datetime = Field(default=datetime.now(), description="The date and time the message was created")
 
 class ChatRequest(BaseModel):
     """
     Chat request schema
     """
-    # TO BE IMPLEMENTED: session_id: str = Field(..., description="The session id")
+    session_id: str = Field(..., description="The session id")
     messages: List[ChatMessage] = Field(..., description="The messages to chat")
     
 class ChatResponse(BaseModel):
     """
     Chat response schema
     """
+    session_id: str = Field(..., description="The session id")
     response_message: ChatMessage = Field(..., description="The message to chat")
     query_used: str = Field(..., description="The query used to generate the response")
 
@@ -46,7 +46,7 @@ class SessionCreateResponse(BaseModel):
     """
     Session create response schema
     """
-    session_id: uuid.UUID = Field(..., description="The id of the session")
+    session_id: str = Field(..., description="The id of the session")
     title: Optional[str] = Field(..., description="Optional title of the session")
     created_at: datetime = Field(..., description="The date and time the session was created")
     updated_at: datetime = Field(..., description="The date and time the session was updated")

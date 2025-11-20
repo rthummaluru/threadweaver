@@ -185,6 +185,7 @@ class LLMChatService:
 
             # Step 8: Return final response (when Claude is done using tools)
             return ChatResponse(
+                session_id=request.session_id,
                 response_message=ChatMessage(
                     type=MessageType.ASSISTANT, 
                     content=response.content[0].text
