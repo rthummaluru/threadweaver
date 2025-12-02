@@ -34,14 +34,19 @@ async def upload_document(file: UploadFile = File(...)) -> str:
         
         # Read the file content
         file_content = await file.read()
-        chunked_content = await chunk_document(file_content)
+        text_content = file_content.decode("utf-8")
+
+        chunked_content = chunk_document(text_content)
 
         # Insert the document into the database TODO: fix insert params
         response = supabase_client.table("documents").insert({
-            "filename": file.filename,
-            "file_path": file.filename,
-            "file_type": file.content_type,
-            "file_size": file.size,
+            "user_id":"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
+            "original_filename": file.filename,
+            "mime_type": file.content_type,
+            "file_size_bytes": file.size,
+            "integration_type": "upload",
+            "integration_id": None,
+            "external_id": None,
         }).execute()
         logger.info(f"Document uploaded successfully: {response}")
         return "Document uploaded successfully"
@@ -64,14 +69,32 @@ def chunk_document(file_content: str) -> list[str]:
     """
     try:
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=100,
-            chunk_overlap=10,
+            chunk_size=700,
+            chunk_overlap=100,
         )
-        chunks_document = text_splitter.create_documents([file_content])
-        chunk_text = text_splitter.split_documents(chunks_document)
+        chunks = text_splitter.split_text(file_content)
 
-        logger.info(f"Document chunked successfully: {chunk_text}")
-        return chunk_text
+        logger.info(f"Document chunked successfully: {chunks}")
+        return chunks
     except Exception as e:
         logger.error(f"Error chunking document: {e}")
         raise Exception(f"Error chunking document: {e}")
+
+
+def embed_chunks(chunks: list[str]) -> list[list[float]]:
+    """
+    Embed the chunks
+
+    Args:
+        chunks: The chunks to embed
+
+    Returns:
+        list[list[float]]: A list of embeddings
+    """
+    try:
+        embeddings = config.get_embedding_model().embed_documents(chunks)
+        logger.info(f"Chunks embedded successfully: Generated {len(embeddings)} embeddings of size {len(embeddings[0])}")
+        return embeddings
+    except Exception as e:
+        logger.error(f"Error embedding chunks: {e}")
+        raise Exception(f"Error embedding chunks: {e}")

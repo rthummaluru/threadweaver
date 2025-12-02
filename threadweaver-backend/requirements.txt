@@ -8,6 +8,7 @@ asyncpg
 langchain
 langgraph
 langchain-anthropic
+langchain-text-splitters
 
 openai
 anthropic
@@ -16,5 +17,11 @@ python-dotenv
 httpx
 
 pydantic-settings
+
+pytest
+pytest-mock
+pytest-asyncio
+
+python-multipart
 
 "mcp[cli]"
