@@ -56,3 +56,11 @@ class MessageListResponse(BaseModel):
     Message list response schema
     """
     messages: List[ChatMessage] = Field(..., description="The messages in the session")
+
+class DocumentUploadResponse(BaseModel):
+    """
+    Document upload response schema
+    """
+    message: str = Field(..., description="Success message")
+    document_id: str = Field(..., description="The ID of the uploaded document")
+    chunks_created: int = Field(..., description="Number of chunks created")

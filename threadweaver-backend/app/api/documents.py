@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.db.supabase_client import get_supabase_connection
+from app.schemas.requests import DocumentUploadResponse
 from config import config
 import logging
 
@@ -10,8 +11,8 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["documents"])
 
-@router.post("/documents/upload")
-async def upload_document(file: UploadFile = File(...)) -> str:
+@router.post("/documents/upload", response_model=DocumentUploadResponse)
+async def upload_document(file: UploadFile = File(...)) -> DocumentUploadResponse:
     """
     Upload a document to the database and process it for RAG
 
@@ -36,9 +37,7 @@ async def upload_document(file: UploadFile = File(...)) -> str:
         file_content = await file.read()
         text_content = file_content.decode("utf-8")
 
-        chunked_content = chunk_document(text_content)
-
-        # Insert the document into the database TODO: fix insert params
+         # Insert the document into the database
         response = supabase_client.table("documents").insert({
             "user_id":"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
             "original_filename": file.filename,
@@ -47,9 +46,38 @@ async def upload_document(file: UploadFile = File(...)) -> str:
             "integration_type": "upload",
             "integration_id": None,
             "external_id": None,
+            "content_type": "file",
+            "title": file.filename
         }).execute()
-        logger.info(f"Document uploaded successfully: {response}")
-        return "Document uploaded successfully"
+
+        document_id = response.data[0]["id"]
+
+        # Chunk and embed the content
+        chunked_content = chunk_document(text_content)
+        embedded_content = embed_chunks(chunked_content)
+
+        # Insert the chunks into the database
+        chunk_records = []
+        for i ,(chunk, embedding) in enumerate(zip(chunked_content, embedded_content)):
+            chunk_records.append({
+                "document_id": document_id,
+                "user_id":"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
+                "integration_type": "upload",
+                "chunk_index": i,
+                "original_text": chunk,
+                "embedding": embedding,
+            })
+            logger.info(f"Chunk {i} uploaded successfully")
+
+        response = supabase_client.table("chunks").insert(chunk_records).execute()
+        logger.info(f"Stored {len(chunk_records)} chunks in database")
+    
+        # Return the document and chunks
+        return DocumentUploadResponse(
+            message="Document and chunks uploaded successfully",
+            document_id=document_id,
+            chunks_created=len(chunk_records)
+        )
     except Exception as e:
         logger.error(f"Error uploading document: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -4,11 +4,14 @@ import logging
 import uvicorn
 from config import config
 from fastapi.middleware.cors import CORSMiddleware
+
+import supabase
 from app.db.supabase_client import get_supabase_connection, supabase_client
+
 from app.api.chat import router as chat_router
 from app.api.users import router as users_router
 from app.api.sessions import router as sessions_router
-import supabase
+from app.api.documents import router as documents_router
 
 # Create the FastAPI app
 app = FastAPI(
@@ -66,5 +69,6 @@ async def startup_event():
 app.include_router(chat_router)
 app.include_router(users_router)
 app.include_router(sessions_router)
+app.include_router(documents_router)
 if __name__ == "__main__":
     uvicorn.run(app, host=config.host, port=config.port)
