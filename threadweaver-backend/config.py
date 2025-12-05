@@ -63,7 +63,7 @@ class Config(BaseSettings):
 
     def get_embedding_model(self, embedding_model: Optional[str] = None, **kwargs) -> any:
         """ Get the embedding model """
-        from langchain_ import OpenAIEmbeddings
+        from langchain_openai import OpenAIEmbeddings
 
         model = embedding_model or "text-embedding-3-small"
         return OpenAIEmbeddings(api_key=self.openai_api_key, model=model, **kwargs)
