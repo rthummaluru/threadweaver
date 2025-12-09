@@ -64,3 +64,18 @@ class DocumentUploadResponse(BaseModel):
     message: str = Field(..., description="Success message")
     document_id: str = Field(..., description="The ID of the uploaded document")
     chunks_created: int = Field(..., description="Number of chunks created")
+
+class SearchResult(BaseModel):
+    """
+    Search result schema
+    """
+    chunk_text: str = Field(..., description="The raw text of the chunk")
+    chunk_index: int = Field(..., description="The index of the chunk")
+    similarity_score: float = Field(..., description="The similarity score of the chunk")
+    document_title: str = Field(..., description="The title of the document the chunk belongs to")
+
+class SearchResponse(BaseModel):
+    """
+    Search response schema
+    """
+    results: List[SearchResult] = Field(..., description="The search results")
