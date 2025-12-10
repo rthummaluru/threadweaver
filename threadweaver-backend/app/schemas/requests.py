@@ -72,7 +72,7 @@ class SearchResult(BaseModel):
     chunk_text: str = Field(..., description="The raw text of the chunk")
     chunk_index: int = Field(..., description="The index of the chunk")
     similarity_score: float = Field(..., description="The similarity score of the chunk")
-    document_title: str = Field(..., description="The title of the document the chunk belongs to")
+    document_id: str = Field(..., description="The id of the document the chunk belongs to")
 
 class SearchResponse(BaseModel):
     """

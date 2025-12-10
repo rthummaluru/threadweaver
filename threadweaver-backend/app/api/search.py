@@ -20,7 +20,6 @@ def search(query: str) -> SearchResponse:
     rag_service = RAGService()
     try:
         search_results = rag_service.search(query=query)
-        logger.info(f"Search results: {search_results}")
         return search_results
     except Exception as e:
         logger.error(f"Error searching for documents: {e}")

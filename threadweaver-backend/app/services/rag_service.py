@@ -38,7 +38,6 @@ class RAGService:
                 "match_threshold": match_threshold,
                 "match_count": top_k
             }).execute()
-            logger.info(f"Search results: {search_results}")
             return search_results
         except Exception as e:
             logger.error(f"Error searching for chunks: {e}")
@@ -58,14 +57,13 @@ class RAGService:
 
             # Search the database for documents
             search_results = self._search_chunks(user_query_embedding, match_threshold, top_k)
-            logger.info(f"Search results: {search_results}")
 
             return SearchResponse(
                 results=[SearchResult(
                     chunk_text=result["original_text"],
                     chunk_index=result["chunk_index"],
                     similarity_score=0.0,
-                    document_title=result["document_id"]
+                    document_id=result["document_id"]
                 ) for result in search_results.data]
             )
         except Exception as e:

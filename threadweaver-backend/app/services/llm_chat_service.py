@@ -2,9 +2,10 @@ import logging
 import time as t
 from config import config
 import anthropic
-from app.schemas.requests import ChatRequest, ChatResponse, ChatMessage, MessageType
+from app.schemas.requests import ChatRequest, ChatResponse, ChatMessage, MessageType, SearchResponse
 from app.integrations.NotionMCPClient import connect_to_notion_mcp_server
 from app.prompts.chat_system_prompt import system_prompt
+from app.services.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class LLMChatService:
         Initialize the LLM chat service
         """
         self.client = client
+        self.rag_service = RAGService()
 
     async def _get_notion_tools(self):
         """
@@ -95,6 +97,13 @@ class LLMChatService:
             list: List of tools in Anthropic format
         """
         return await self._convert_notion_tools_to_anthropic(tools)
+    
+    def _enhance_message_with_rag_context(self, user_query: str, rag_results: SearchResponse) -> str:
+        """
+        Enhance the last message with RAG context
+        """
+        rag_results_string = "\n\n".join([f"Document ID: {result.document_id} \n\n Chunk text: {result.chunk_text}" for result in rag_results.results])
+        return f"<question>\n{user_query}\n</question> \n\n <context>\n{rag_results_string}\n</context>"
 
     async def chat(self, request: ChatRequest) -> ChatResponse:
         """
@@ -117,7 +126,19 @@ class LLMChatService:
         logger.info("=============== Begin LLM workflow ===============")
         # Convert request messages to Anthropic format
         messages = [{"role": message.type.value, "content": message.content} for message in request.messages]
-        
+
+        # Step 0: Search the database for documents
+        user_query = messages[-1]["content"]
+        rag_results = self.rag_service.search(query=user_query, match_threshold=0.25, top_k=3)
+
+        # Check if there are any relevant results from the RAG search
+        if rag_results.results:
+            # Add the RAG results as extra context to the last message
+            context_enhanced_message = self._enhance_message_with_rag_context(user_query, rag_results)
+            messages[-1]["content"] = context_enhanced_message
+        else:
+            logger.info(f"No relevant results found from the RAG search for user query: {user_query}")
+
         # Step 1: Get tools from MCP server (MCP Tool objects)
         tools = await self._get_notion_tools()
         
