@@ -72,6 +72,13 @@ class Config(BaseSettings):
         default=None, description="The API key for the Notion API", repr=False
     )
 
+    def get_search_model(self, search_model: Optional[str] = None, **kwargs) -> any:
+        """ Get the search model """
+        from langchain_openai import OpenAIEmbeddings
+
+        model = search_model or "text-embedding-3-small"
+        return OpenAIEmbeddings(api_key=self.openai_api_key, model=model, **kwargs)
+
 config = Config()
 
 

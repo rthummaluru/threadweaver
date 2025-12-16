@@ -42,10 +42,8 @@ async def main():
         # List available tools from the MCP server
         tools = await session.list_tools()
         tool_names = [tool.name for tool in tools.tools] if hasattr(tools, 'tools') else []
-        print(f"Available tools: {tool_names}")
 
         result = await session.call_tool("API-post-search", {"query": "when was the page created?"})
-        print(f"Result: {result}")
 
 if __name__ == "__main__":
     asyncio.run(main())
