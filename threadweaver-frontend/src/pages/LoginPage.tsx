@@ -26,8 +26,7 @@ const LoginPage = () => {
     const [loginPassword, setLoginPassword] = useState<string>('');
 
     //
-    const handleLoginWithEmail = async (event) => {
-       // event.preventDefault();
+    const handleLoginWithEmail = async () => {
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: loginEmail,
@@ -45,8 +44,7 @@ const LoginPage = () => {
     }
 
     // Handle sign up
-    const handleSignUp = async (event) => {
-       // event.preventDefault();
+    const handleSignUp = async () => {
         try {
             const { data, error } = await supabase.auth.signUp({
                 email: setupEmail,
@@ -56,11 +54,11 @@ const LoginPage = () => {
                 },
             });
             console.log('Sign up data:', data);
-            navigate('/chat');
             if (error) {
                 throw error;
             }
             console.log('Sign up successful:', data);
+            navigate('/chat');
         } catch (error) {
             console.error('Error signing up:', error);
             alert('Error signing up. Please try again.');

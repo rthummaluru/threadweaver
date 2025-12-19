@@ -6,6 +6,13 @@ import QueryBar from '../components/QueryBar';
 import AppName from '../components/AppName';
 import Headings from '../components/Headers';
 
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+
 
 const ChatPage = () => {
 
@@ -23,6 +30,9 @@ const ChatPage = () => {
   
     // State to manage session id
     const [sessionId, setSessionId] = useState<string | null>(null);
+
+    // State to manage user id
+    const [userId, setUserId] = useState<string | null>(null);
   
   
     // Get the session id from the backend
@@ -30,7 +40,7 @@ const ChatPage = () => {
       try {
         // Gets the session id from the backend
         console.log('Getting session id...'); 
-        const response = await axios.get('http://127.0.0.1:8000/api/v1/users/7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8/sessions/current');
+        const response = await axios.get(`http://127.0.0.1:8000/api/v1/users/${userId}/sessions/current`);
         setSessionId(response.data.session_id);
       } catch (error) {
         console.error('Error getting session id:', error);
@@ -48,10 +58,30 @@ const ChatPage = () => {
         console.error('Error getting messages:', error);
       }
     }
+
+    // Get the user id from the backend
+    useEffect(() => {
+      const getUserId = async () => {
+        try {
+          const { data, error } = await supabase.auth.getUser();
+          if (error) {
+            throw error;
+          }
+          console.log('User id:', data.user.id);
+          setUserId(data.user.id);
+        } catch (error) {
+          console.error('Error getting user id:', error);
+        }
+      }
+      getUserId();
+    }, []);
+
   
     useEffect(() => {
-      getSessionId();
-    }, []);
+      if (userId) {
+        getSessionId();
+      }
+    }, [userId]);
   
     useEffect(() => {
       if (sessionId) {
