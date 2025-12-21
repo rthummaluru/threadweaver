@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["documents"])
 
+
 @router.post("/documents/upload", response_model=DocumentUploadResponse)
 async def upload_document(file: UploadFile = File(...)) -> DocumentUploadResponse:
     """
@@ -53,8 +54,8 @@ async def upload_document(file: UploadFile = File(...)) -> DocumentUploadRespons
         document_id = response.data[0]["id"]
 
         # Chunk and embed the content
-        chunked_content = chunk_document(text_content)
-        embedded_content = embed_chunks(chunked_content)
+        chunked_content = _chunk_document(text_content)
+        embedded_content = _embed_chunks(chunked_content)
 
         # Insert the chunks into the database
         chunk_records = []
@@ -78,11 +79,17 @@ async def upload_document(file: UploadFile = File(...)) -> DocumentUploadRespons
             document_id=document_id,
             chunks_created=len(chunk_records)
         )
+    # Possible failure points:
+    # - Error chunking the document
+    # - Error embedding the chunks
+    # - Error inserting the chunks into the database
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error uploading document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=503, detail="Unable to upload document. Please try again later.")
 
-def chunk_document(file_content: str) -> list[str]:
+def _chunk_document(file_content: str) -> list[str]:
     """
     Chunk the document into smaller pieces
 
@@ -93,23 +100,23 @@ def chunk_document(file_content: str) -> list[str]:
         list[str]: A list of chunks
 
     Raises:
-        Exception: If there is an error chunking the document
+        ValueError: If the file content is empty
     """
-    try:
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=700,
-            chunk_overlap=100,
-        )
-        chunks = text_splitter.split_text(file_content)
 
-        logger.info(f"Document chunked successfully: {chunks}")
-        return chunks
-    except Exception as e:
-        logger.error(f"Error chunking document: {e}")
-        raise Exception(f"Error chunking document: {e}")
+    if not file_content:
+        raise ValueError("File content is empty")
+    
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=700,
+        chunk_overlap=100,
+    )
+    chunks = text_splitter.split_text(file_content)
+
+    logger.info(f"Document chunked successfully: {chunks}")
+    return chunks
 
 
-def embed_chunks(chunks: list[str]) -> list[list[float]]:
+def _embed_chunks(chunks: list[str]) -> list[list[float]]:
     """
     Embed the chunks
 
@@ -119,10 +126,9 @@ def embed_chunks(chunks: list[str]) -> list[list[float]]:
     Returns:
         list[list[float]]: A list of embeddings
     """
-    try:
-        embeddings = config.get_embedding_model().embed_documents(chunks)
-        logger.info(f"Chunks embedded successfully: Generated {len(embeddings)} embeddings of size {len(embeddings[0])}")
-        return embeddings
-    except Exception as e:
-        logger.error(f"Error embedding chunks: {e}")
-        raise Exception(f"Error embedding chunks: {e}")
+    if not chunks:
+        raise ValueError("Chunks are empty")
+
+    embeddings = config.get_embedding_model().embed_documents(chunks)
+    logger.info(f"Chunks embedded successfully: Generated {len(embeddings)} embeddings of size {len(embeddings[0])}")
+    return embeddings

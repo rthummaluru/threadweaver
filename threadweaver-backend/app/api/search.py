@@ -21,6 +21,8 @@ def search(query: str) -> SearchResponse:
     try:
         search_results = rag_service.search(query=query)
         return search_results
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error searching for documents: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Unable to search for documents. Please try again later.")
