@@ -26,7 +26,8 @@ const LoginPage = () => {
     const [loginPassword, setLoginPassword] = useState<string>('');
 
     //
-    const handleLoginWithEmail = async () => {
+    const handleLoginWithEmail = async (event) => {
+        event.preventDefault();
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: loginEmail,
@@ -44,7 +45,8 @@ const LoginPage = () => {
     }
 
     // Handle sign up
-    const handleSignUp = async () => {
+    const handleSignUp = async (event) => {
+        event.preventDefault();
         try {
             const { data, error } = await supabase.auth.signUp({
                 email: setupEmail,
