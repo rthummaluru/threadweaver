@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1", tags=["documents"])
 
 
 @router.post("/documents/upload", response_model=DocumentUploadResponse)
-async def upload_document(file: UploadFile = File(...)) -> DocumentUploadResponse:
+async def upload_document(file: UploadFile = File(...), user_id: str = Depends(get_current_user_id)) -> DocumentUploadResponse:
     """
     Upload a document to the database and process it for RAG
 
@@ -29,6 +29,8 @@ async def upload_document(file: UploadFile = File(...)) -> DocumentUploadRespons
     """
     logger.info(f"Uploading document: {file.filename}")
     supabase_client = get_supabase_connection()
+    
+
     try:
         # Upload the file to the database
         if not file.filename.endswith(('.txt')):
@@ -40,7 +42,7 @@ async def upload_document(file: UploadFile = File(...)) -> DocumentUploadRespons
 
          # Insert the document into the database
         response = supabase_client.table("documents").insert({
-            "user_id":"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
+            "user_id": user_id,     #"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
             "original_filename": file.filename,
             "mime_type": file.content_type,
             "file_size_bytes": file.size,
