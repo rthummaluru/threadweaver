@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.requests import ChatRequest, ChatResponse, ChatMessage, MessageType, MessageListResponse
 from app.db.supabase_client import get_supabase_connection
 from config import config
 from app.services.llm_chat_service import LLMChatService
 from supabase import Client
 from datetime import datetime
+from app.auth.dependencies import get_current_user_id
 import logging
 
 
@@ -12,12 +13,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["chat"])
 
 @router.post("/chat")
-async def chat(request: ChatRequest) -> ChatResponse:
+async def chat(request: ChatRequest, current_user_id: str = Depends(get_current_user_id)) -> ChatResponse:
     """
     Chat with the model
     """
     supabase_client = get_supabase_connection()
     logger.info(f"Received request: {request}")
+
+    # Check if the session exists and belongs to the current user
+    session = supabase_client.table("chat_sessions")\
+        .select("id")\
+        .eq("id", request.session_id)\
+        .eq("user_id", current_user_id)\
+        .single()\
+        .execute()
+
+    if not session.data:
+        raise HTTPException(status_code=404, detail="Session not found")
     
     # Insert the user message into the messages table
     insert_user_message(supabase_client, request)
