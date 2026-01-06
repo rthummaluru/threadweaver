@@ -50,7 +50,7 @@ async def get_current_user_session(user_id: str) -> SessionCreateResponse:
             )
 
     except Exception as e:
-        logger.error(f"Error getting current session for user: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting current session for user: {e}")
+        logger.error(f"Database error: {e}")
+        raise HTTPException(status_code=503, detail=f"Unable to get current session for user. Please try again later.")
         
     
