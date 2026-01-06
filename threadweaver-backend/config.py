@@ -44,6 +44,9 @@ class Config(BaseSettings):
     supabase_key: Optional[str] = Field(
         default=None, description="The API key for the Supabase database", repr=False
     )
+    supabase_jwks_url: Optional[str] = Field(
+        default=None, description="The JWKS URL for the Supabase database", repr=False
+    )
 
     # AI configuration
     openai_api_key: Optional[str] = Field(
