@@ -135,19 +135,43 @@ const ChatPage = () => {
         setIsDisabled(false);
       }
     }
-    /*
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        setDocumentUpload(file);
+        console.log('File selected:', file);
+      }
+    }
+    
     const handleUploadDocument = async () => {
+      if (!documentUpload) {
+        console.error('No file selected');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', documentUpload);
+
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/v1/documents/upload', {
-          session_id: sessionId,
-          messages: [...chatMessages, {type: 'user', content: inputValue}],
+        const response = await axios.post('http://127.0.0.1:8000/api/v1/documents/upload', formData, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
         });
-        console.log(response.data);
+        console.log("Upload document response:", response.data);
+        alert(`Document uploaded successfully! ${response.data.chunks_created} chunks created`);
+
+        // Refresh file input
+        setDocumentUpload(null);
+
+
       } catch (error) {
         console.error('Error uploading document:', error);
+        alert('Error uploading document. Please try again.');
       }
       setIsDisabled(false);
-    } */
+    } 
   
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInputValue(event.target.value);
@@ -185,7 +209,8 @@ const ChatPage = () => {
   
         <div className="search-bar-container flex justify-center">
           <QueryBar>
-            {/* <Button textContent='Upload Document' handleClick={handleUploadDocument} disabled={isDisabled} /> */}
+            <input type="file" accept=".txt" onChange={handleFileSelect} />
+            <Button textContent='Upload Document' handleClick={handleUploadDocument} disabled={isDisabled} />
             <textarea className="query-input" placeholder="Enter your query" value={inputValue} onChange={handleInputChange} />       
             <Button textContent='Send' handleClick={handleSend} disabled={isDisabled} />
           </QueryBar>
