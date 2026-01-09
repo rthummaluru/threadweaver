@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from app.auth.dependencies import get_current_user_id
 from app.db.supabase_client import get_supabase_connection
 from app.schemas.requests import DocumentUploadResponse
 from config import config
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/api/v1", tags=["documents"])
 
 
 @router.post("/documents/upload", response_model=DocumentUploadResponse)
-async def upload_document(file: UploadFile = File(...), user_id: str = Depends(get_current_user_id)) -> DocumentUploadResponse:
+async def upload_document(file: UploadFile = File(...), current_user_id: str = Depends(get_current_user_id)) -> DocumentUploadResponse:
     """
     Upload a document to the database and process it for RAG
 
@@ -42,7 +43,7 @@ async def upload_document(file: UploadFile = File(...), user_id: str = Depends(g
 
          # Insert the document into the database
         response = supabase_client.table("documents").insert({
-            "user_id": user_id,     #"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
+            "user_id": current_user_id,
             "original_filename": file.filename,
             "mime_type": file.content_type,
             "file_size_bytes": file.size,
@@ -64,7 +65,7 @@ async def upload_document(file: UploadFile = File(...), user_id: str = Depends(g
         for i ,(chunk, embedding) in enumerate(zip(chunked_content, embedded_content)):
             chunk_records.append({
                 "document_id": document_id,
-                "user_id":"7b3866ad-1ffd-49c5-94c4-4b11d11d9cb8",  # Hardcoded for now
+                "user_id": current_user_id,  
                 "integration_type": "upload",
                 "chunk_index": i,
                 "original_text": chunk,

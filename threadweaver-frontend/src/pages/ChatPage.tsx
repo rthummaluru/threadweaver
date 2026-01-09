@@ -33,14 +33,23 @@ const ChatPage = () => {
 
     // State to manage user id
     const [userId, setUserId] = useState<string | null>(null);
+
+    // State to manage document upload
+    const [documentUpload, setDocumentUpload] = useState<File | null>(null);
+
+    // State to manage access token
+    const [accessToken, setAccessToken] = useState<string | null>(null);
   
   
     // Get the session id from the backend
     const getSessionId = async () => {
       try {
-        // Gets the session id from the backend
         console.log('Getting session id...'); 
-        const response = await axios.get(`http://127.0.0.1:8000/api/v1/users/${userId}/sessions/current`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/v1/users/sessions/current`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
         setSessionId(response.data.session_id);
       } catch (error) {
         console.error('Error getting session id:', error);
@@ -50,9 +59,12 @@ const ChatPage = () => {
     // Get the messages from the backend
     const getMessages = async () => {
       try {
-        // Gets the messages from the backend
         console.log('Getting initial messages...');
-        const response = await axios.get(`http://127.0.0.1:8000/api/v1/sessions/${sessionId}/messages`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/v1/sessions/${sessionId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
         setChatMessages(response.data.messages);
       } catch (error) {
         console.error('Error getting messages:', error);
@@ -63,12 +75,14 @@ const ChatPage = () => {
     useEffect(() => {
       const getUserId = async () => {
         try {
-          const { data, error } = await supabase.auth.getUser();
+          const { data, error } = await supabase.auth.getSession();
           if (error) {
             throw error;
           }
-          console.log('User id:', data.user.id);
-          setUserId(data.user.id);
+          console.log('User id:', data.session?.user.id);
+          console.log('Access token:', data.session?.access_token);
+          setUserId(data.session?.user.id || null);
+          setAccessToken(data.session?.access_token || null);
         } catch (error) {
           console.error('Error getting user id:', error);
         }
@@ -78,10 +92,12 @@ const ChatPage = () => {
 
   
     useEffect(() => {
-      if (userId) {
+      console.log('begingging userId:', userId);
+      console.log('begingging accessToken:', accessToken);
+      if (userId && accessToken) {
         getSessionId();
       }
-    }, [userId]);
+    }, [userId, accessToken]);
   
     useEffect(() => {
       if (sessionId) {
@@ -104,6 +120,10 @@ const ChatPage = () => {
         const response = await axios.post('http://127.0.0.1:8000/api/v1/chat', {
           session_id: sessionId,
           messages: [...chatMessages, {type: 'user', content: inputValue}],
+        }, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
         });
           console.log(response.data);
           setChatMessages(prev => [...prev, {type: 'assistant', content: response.data.response_message.content}]);
@@ -111,11 +131,23 @@ const ChatPage = () => {
           setIsDisabled(false);
       } catch (error) {
         console.error('Error sending message to backend:', error);
-  
         setIsLoading(false);
         setIsDisabled(false);
       }
     }
+    /*
+    const handleUploadDocument = async () => {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/v1/documents/upload', {
+          session_id: sessionId,
+          messages: [...chatMessages, {type: 'user', content: inputValue}],
+        });
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error uploading document:', error);
+      }
+      setIsDisabled(false);
+    } */
   
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInputValue(event.target.value);
@@ -153,6 +185,7 @@ const ChatPage = () => {
   
         <div className="search-bar-container flex justify-center">
           <QueryBar>
+            {/* <Button textContent='Upload Document' handleClick={handleUploadDocument} disabled={isDisabled} /> */}
             <textarea className="query-input" placeholder="Enter your query" value={inputValue} onChange={handleInputChange} />       
             <Button textContent='Send' handleClick={handleSend} disabled={isDisabled} />
           </QueryBar>
