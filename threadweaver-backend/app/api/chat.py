@@ -19,6 +19,7 @@ async def chat(request: ChatRequest, current_user_id: str = Depends(get_current_
     """
     supabase_client = get_supabase_connection()
     logger.info(f"Received request: {request}")
+    logger.info(f"Current user id: {current_user_id}")
 
     # Check if the session exists and belongs to the current user
     session = supabase_client.table("chat_sessions")\
