@@ -26,4 +26,4 @@ pytest-asyncio
 
 python-multipart
 
-"mcp[cli]"
+mcp[cli]

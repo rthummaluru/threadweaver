@@ -8,18 +8,18 @@ Work is scattered across multiple platforms, forcing constant context-switching 
 
 ## Features
 
-- 🤖 **AI-Powered Chat**: Powered by Anthropic Claude for intelligent conversations
-- 🔍 **Unified Search**: Search across all connected platforms (Notion, Slack, WhatsApp Business)
-- 🛠️ **Action Execution**: Perform tasks across integrated services via MCP protocol
-- 💬 **Session Management**: Persistent conversation history with session tracking
-- 🔌 **Platform Integrations**: Connect Notion (active), with Slack and WhatsApp Business coming soon
+- **AI-Powered Chat**: Powered by AI for intelligent conversations
+- **Unified Search**: Search across all connected platforms (Notion, Slack, WhatsApp Business)
+- **Action Execution**: Perform tasks across integrated services via MCP protocol
+- **Session Management**: Persistent conversation history with session tracking
+- **Platform Integrations**: Connect Notion (active), with Slack and WhatsApp Business coming soon
 
 ## Tech Stack
 
 - **Backend**: FastAPI (Python) with async/await
 - **Frontend**: React 18 + Vite with TypeScript
 - **Database**: Supabase (PostgreSQL)
-- **AI**: Anthropic Claude (claude-sonnet-4-20250514)
+- **AI**: (currently) Anthropic Claude (claude-sonnet-4-20250514)
 - **Integration Protocol**: MCP (Model Context Protocol)
 - **Styling**: Tailwind CSS
 
@@ -51,13 +51,13 @@ ThreadWeaver follows a **three-tier architecture** with clear separation of conc
 - **Notion MCP Server**: Search and retrieval via MCP protocol
 - **Future**: Slack, WhatsApp Business integrations
 
-### Request Flow
+### Message Request Flow (Core Feature)
 1. User sends message → Frontend updates state
-2. Frontend → `POST /api/v1/chat` with message history
+2. Frontend → `POST /api/v1/chat` with message history of current user
 3. Backend → `LLMChatService` fetches available tools from MCP
 4. Backend → Claude API with tools and conversation context
 5. Claude → Tool execution requests (if needed)
-6. Backend → Execute tools via MCP, return results to Claude
+6. Backend → Execute tools via MCP (direct api calls right now), return results to Claude
 7. Backend → Persist messages to database
 8. Backend → Final response → Frontend
 9. Frontend → Display assistant message
@@ -121,17 +121,23 @@ CORS_ORIGINS=["http://localhost:5173"]
 
 ## API Endpoints
 
-### Chat
+### Chat (handles chat requests)
 - **POST** `/api/v1/chat` - Send a message and get AI response
   - Request: `{ session_id: UUID, messages: ChatMessage[] }`
   - Response: `{ response_message: ChatMessage, session_id: UUID, query_used: string }`
 
-### Sessions
+### Sessions (handles session management per user)
 - **GET** `/api/v1/sessions/{session_id}/messages` - Get all messages in a session
 - **POST** `/api/v1/sessions` - Create a new session
 
 ### Users
 - **GET** `/api/v1/users/{user_id}/sessions/current` - Get or create current session for user
+
+### Search (useful for evaluating RAG results on uploaded documents)
+- **GET** `/api/v1/search` - Get related documents given a user query
+
+### Document Upload
+- **POST** `api/v1/document/upload` - Process documents for RAG process
 
 ### Health
 - **GET** `/health` - Health check endpoint
@@ -145,34 +151,39 @@ API documentation available at `http://localhost:8000/docs` when the backend is 
 threadweaver/
 ├── threadweaver-backend/
 │   ├── app/
-│   │   ├── api/          # API routes
-│   │   ├── services/     # Business logic
-│   │   ├── db/           # Database client
-│   │   ├── integrations/ # External service clients
-│   │   ├── schemas/      # Pydantic models
-│   │   └── prompts/      # System prompts
+│   │   ├── api/           # FastAPI route handlers (chat.py, search.py, documents.py, etc.)
+│   │   ├── db/            # Supabase client setup
+│   │   ├── schemas/       # Pydantic models for requests/responses
+│   │   ├── services/      # Service layer for LLM, RAG etc.
+│   │   ├── agents/        # (placeholder for agent logic)
+│   │   └── prompts/       # (placeholder for LLM prompts)
 │   ├── supabase/
-│   │   └── migrations/   # Database migrations
-│   ├── main.py           # FastAPI app entry point
-│   └── config.py         # Configuration management
+│   │   └── migrations/    # Database migrations (if using)
+│   ├── config.py          # Centralized environment/config
+│   └── main.py            # FastAPI app entry point
 ├── threadweaver-frontend/
 │   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── App.tsx       # Main app component
-│   │   └── main.jsx      # Entry point
+│   │   ├── components/    # React components
+|   |   ├── pages/         # UI Pages
+│   │   ├── App.tsx        # Main app component (if using TypeScript)
+│   │   └── main.jsx       # React entry point
 │   └── package.json
+├── CLAUDE.md              # Claude code collaborating guidance
 └── README.md
 ```
 
 ## Current Status
 
 - ✅ Core chat functionality with Anthropic Claude
-- ✅ Notion integration via MCP protocol
+- ✅ Basic Notion integration via MCP protocol (plan to improve)
 - ✅ Session management and message persistence
 - ✅ Database schema with Supabase
+- (WIP) Document Upload Feature (RAG only on text documents)
+- (WIP) User authentication (planned)
+
+
 - 🚧 Slack integration (planned)
 - 🚧 WhatsApp Business integration (planned)
-- 🚧 User authentication (planned)
 
 ## Development
 
@@ -196,7 +207,3 @@ threadweaver/
 ## Contributing
 
 This is a personal project in active development. Contributions welcome!
-
-## License
-
-[Add your license here]

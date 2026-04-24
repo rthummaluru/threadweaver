@@ -9,4 +9,5 @@ eslint
 eslint-plugin-react-hooks
 eslint-plugin-react-refresh
 prettier
+@supabase/supabase-js
 @tailwindcss/typography

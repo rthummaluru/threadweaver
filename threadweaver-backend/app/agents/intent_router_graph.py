@@ -33,4 +33,12 @@ class InputRouterState(TypedDict):
     sources_used: Optional[List[str]]
 
 
+class OutputRouterState(TypedDict):
+    """ Output state for the agentic workflow """
+
+    # Outputs
+    assistant_message: str
+    tool_calls_made: Optional[List[dict]]
+    sources_used: Optional[List[str]]
+
     
