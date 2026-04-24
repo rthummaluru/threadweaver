@@ -11,6 +11,7 @@ router = APIRouter(prefix="/api/v1", tags=["search"])
 
 supabase_client = get_supabase_connection()
 
+# USED FOR TESTING RAG SEARCH RESULTS ONLY
 @router.get("/search")
 def search(query: str) -> SearchResponse:
     """

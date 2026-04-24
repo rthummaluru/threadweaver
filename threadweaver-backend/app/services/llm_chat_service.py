@@ -145,7 +145,6 @@ class LLMChatService:
         # Step 2: Convert MCP tools to Anthropic format
         anthropic_tools = await self._get_anthropic_tools(tools)
         
-        #logger.info(f"=== LLMChatService.chat: Tools converted to Anthropic format: {anthropic_tools} ===")
         
         try:
             # Step 3: First call to Claude with tools
@@ -157,9 +156,6 @@ class LLMChatService:
                 tools=anthropic_tools,  # Pass tools to Claude
             )
             
-           # logger.info(f"=== LLMChatService.chat: Response stop reason: {response.stop_reason} ===")
-           # logger.info(f"=== LLMChatService.chat: Response content: {response.content} ===")
-
             # Step 4: Handle tool use loop
             current_messages = messages  # Track conversation history
             logger.info(f"=============== Current messages: {current_messages} ===============")
